@@ -1,11 +1,13 @@
-#initial code was taken from the Internet (move_keyboard.py)
-
 import pygame
 import pid_class as pid
 import numpy as np
 
+#critical level to an obstacle
 level1 = 100.0;
-level2 = 200.0;
+
+#FOLLOWME range
+followme_range = 25
+
  
 # Define some colors
 BLACK = (0, 0, 0)
@@ -54,11 +56,20 @@ pygame.mouse.set_visible(0)
 x_speed = 0
 y_speed = 0
  
-# Initial position
+# Current position
 x_coord = 75
 y_coord = 75
 
+#follower position
+fx_coord = 0
+fy_coord = 0
+
+#speed of the follower
+fx_speed = 0
+fy_speed = 0
+
 # Obstacles
+#a = [[150,100],151,100],[152,100],[153,100],[154,100],[155,100]]
 a = [[0,50], [1000, 50]]
 b = [[0,500], [1000, 500]]
 #b = [[0,200], [1000, 200]]
@@ -108,13 +119,26 @@ while not done:
  
     # ALL GAME LOGIC SHOULD GO BELOW THIS COMMENT
 
+    #follower logic
+    diff_x = x_coord - fx_coord
+    diff_y = y_coord - fy_coord
+    
+    if abs(diff_x) > followme_range :
+        fx_speed = diff_x / abs(diff_x) * 3
+    else:
+        fx_speed = 0
+    if abs(diff_y) > followme_range :
+        fy_speed = diff_y / abs(diff_y) * 3
+    else:
+        fy_speed = 0
+
     #ultrasonic
-    north = abs(y_coord - a[0][1]) + np.random.uniform(0, 10)
-    south = abs(y_coord - b[0][1]) + np.random.uniform(0, 10)
+    north = abs(fy_coord - a[0][1]) + np.random.uniform(0, 10)
+    south = abs(fy_coord - b[0][1]) + np.random.uniform(0, 10)
     print "North: " + str(north) + " South: " + str(south)
 
-    west = abs(x_coord - c[0][0]) + np.random.uniform(0, 10)
-    east = abs(x_coord - d[0][0]) + np.random.uniform(0, 10)
+    west = abs(fx_coord - c[0][0]) + np.random.uniform(0, 10)
+    east = abs(fx_coord - d[0][0]) + np.random.uniform(0, 10)
     print "West: " + str(west) + " East: " + str(east)    
 
     if (north == 0) and (south == 0):
@@ -156,20 +180,25 @@ while not done:
         
 
     print value, value2
+
+    if (north - south) != 0:
+        fy_speed = -3 * value
+        fy_speed = 3 * value
+
+    if (west - east) != 0:
+        fx_speed = -3 * value2
+        fx_speed = 3 * value2   
  
     # Move the object according to the speed vector.
     x_coord = x_coord + x_speed
     y_coord = y_coord + y_speed
+
+    # Move the follower according to the speed vector.
+    fx_coord = fx_coord + fx_speed
+    fy_coord = fy_coord + fy_speed    
  
     # ALL GAME LOGIC SHOULD GO ABOVE THIS COMMENT
-
-    if (north - south) != 0:
-        y_speed = -3 * value
-        y_speed = 3 * value
-
-    if (west - east) != 0:
-        x_speed = -3 * value2
-        x_speed = 3 * value2       
+    
  
     # ALL CODE TO DRAW SHOULD GO BELOW THIS COMMENT
  
@@ -178,6 +207,7 @@ while not done:
     screen.fill(WHITE)
  
     draw_stick_figure(screen, x_coord, y_coord)
+    draw_stick_figure(screen, fx_coord, fy_coord)
     draw_osbt(screen, a)
     draw_osbt(screen, b)
     draw_osbt(screen, c)
