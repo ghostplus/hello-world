@@ -110,7 +110,7 @@ while not done:
 
     #ultrasonic
     north = abs(y_coord - a[0][1]) + np.random.uniform(0, 10)
-    south = abs (y_coord - b[0][1]) + np.random.uniform(0, 10)
+    south = abs(y_coord - b[0][1]) + np.random.uniform(0, 10)
     print "North: " + str(north) + " South: " + str(south)
 
     west = abs(x_coord - c[0][0]) + np.random.uniform(0, 10)
