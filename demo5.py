@@ -71,6 +71,14 @@ class pid_hold:
     def update(self, pvs):
         return self.north.update(pvs[0]), self.south.update(pvs[1]), self.east.update(pvs[2]), self.west.update(pvs[3])               
 
+def limitValue(value, limit):
+    
+    if value >= limit:
+        value = limit
+    
+    return value
+    
+
 pid_hold = pid_hold(1.0)
  
 # Speed in pixels per frame
@@ -150,7 +158,7 @@ while not done:
     south = south_o
     west = west_o
     east = east_o
-
+    
     if (north_o == 0) and (south_o == 0):
         north = 1
         south = 1
@@ -191,10 +199,12 @@ while not done:
 
     print value, value2
  
+    noise_level = 1.3
     # Move the object according to the speed vector.
-    x_coord = x_coord + x_speed
-    y_coord = y_coord + y_speed
- 
+    x_coord = x_coord + x_speed + np.random.uniform(-noise_level, noise_level) 
+    y_coord = y_coord + y_speed + np.random.uniform(-noise_level, noise_level) 
+
+
     # ALL GAME LOGIC SHOULD GO ABOVE THIS COMMENT
 
     if (north - south) != 0:
@@ -209,6 +219,12 @@ while not done:
         #x_speed = 0
         #y_speed = 0  
         #set once setpoints
+        sensor_limit = 350
+        north_o = limitValue(north_o, sensor_limit)
+        south_o = limitValue(south_o, sensor_limit)
+        east_o = limitValue(east_o, sensor_limit)
+        west_o = limitValue(west_o, sensor_limit)
+        
         if once_set:
             pid_hold.setPoints([north_o, south_o, east_o, west_o])
             once_set = False
@@ -226,10 +242,6 @@ while not done:
             x_speed = act[3] /100   
               
         print act
-        
-    #add noise 
-    x_speed += np.random.uniform(-0.1, 0.1) 
-    y_speed += np.random.uniform(-0.1, 0.1)     
      
         
         
