@@ -3,6 +3,7 @@
 import pygame
 import pid_class as pid
 import numpy as np
+from pygame.examples.stars import draw_stars
 
 level1 = 100.0;
 level2 = 200.0;
@@ -50,7 +51,7 @@ clock = pygame.time.Clock()
 # Hide the mouse cursor
 pygame.mouse.set_visible(0)
  
-
+accuracy = 1
 hold_mode = False 
 hold_distance = 2.0
 
@@ -126,6 +127,8 @@ while not done:
             elif event.key == pygame.K_BACKSPACE:
                 hold_mode = True
                 once_set = True
+            elif event.key == pygame.K_SPACE:
+                hold_mode = False
 
         # User let up on a key
         elif event.type == pygame.KEYUP:
@@ -139,7 +142,10 @@ while not done:
             elif event.key == pygame.K_DOWN:
                 y_speed = 0
             elif event.key == pygame.K_BACKSPACE:
-                hold_mode = False
+                #hold_mode = False
+                pass
+            
+
 
     # ALL EVENT PROCESSING SHOULD GO ABOVE THIS COMMENT
  
@@ -201,8 +207,8 @@ while not done:
  
     noise_level = 1.3
     # Move the object according to the speed vector.
-    x_coord = x_coord + x_speed + np.random.uniform(-noise_level, noise_level) 
-    y_coord = y_coord + y_speed + np.random.uniform(-noise_level, noise_level) 
+    x_coord = x_coord + x_speed + np.random.uniform(-noise_level, noise_level)#np.random.gumbel(0, noise_level)#laplace(0, noise_level)#np.random.uniform(-noise_level, noise_level) 
+    y_coord = y_coord + y_speed + np.random.uniform(-noise_level, noise_level)#np.random.gumbel(0, noise_level)#np.random.laplace(0, noise_level)#np.random.uniform(-noise_level, noise_level) 
 
 
     # ALL GAME LOGIC SHOULD GO ABOVE THIS COMMENT
@@ -219,31 +225,37 @@ while not done:
         #x_speed = 0
         #y_speed = 0  
         #set once setpoints
-        sensor_limit = 350
-        north_o = limitValue(north_o, sensor_limit)
-        south_o = limitValue(south_o, sensor_limit)
-        east_o = limitValue(east_o, sensor_limit)
-        west_o = limitValue(west_o, sensor_limit)
+        sensor_limit = 300
+        north_o = min(north_o, sensor_limit)
+        south_o = min(south_o, sensor_limit)
+        east_o = min(east_o, sensor_limit)
+        west_o = min(west_o, sensor_limit)
         
         if once_set:
             pid_hold.setPoints([north_o, south_o, east_o, west_o])
             once_set = False
+            hold_pos = int(x_coord), int(y_coord)
             
         act = pid_hold.update([north_o, south_o, east_o, west_o])
         
         if north_o > south_o:
-            y_speed = act[0] / 100
+            y_speed = act[0] / 5
         else:
-            y_speed = -act[1] / 100
+            y_speed = -act[1] / 5
             
         if east_o > west_o:
-            x_speed = -act[2] / 100
+            x_speed = -act[2] / 5
         else:
-            x_speed = act[3] /100   
+            x_speed = act[3] /5
+        
+        accuracy_x = int(abs(x_coord - hold_pos[0]))
+        accuracy_y = int(abs(y_coord - hold_pos[1]))
+        temp = max(accuracy_x, accuracy_y, 1)
+        if temp > accuracy:
+            accuracy = temp
               
         print act
-     
-        
+        print 'Hold accuracy: ' + str(accuracy)
         
  
     # ALL CODE TO DRAW SHOULD GO BELOW THIS COMMENT
@@ -257,6 +269,9 @@ while not done:
     draw_osbt(screen, b)
     draw_osbt(screen, c)
     draw_osbt(screen, d)
+    if hold_mode:
+        pygame.draw.circle(screen, GREEN, hold_pos, 2)
+        pygame.draw.circle(screen, RED, hold_pos, accuracy, 1)
  
     # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
  

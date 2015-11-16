@@ -7,5 +7,7 @@ demo.py - demo
 
 demo2.py - demo with "follow me" module
 
+demo5.py - demo with position hold (BACKSPACE - hold on, SPACE - hold off)
+
 P.S. This is just a test.
 P.P.S. Just another test.
